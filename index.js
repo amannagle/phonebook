@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+app.use(express.json());
 let persons = [
   {
     id: 1,
@@ -44,6 +45,28 @@ app.get("/persons/:id",(request,response)=>{
 })
 app.get("/info",(request,response)=>{
   response.send(`<p>phonebook has ${persons.length} people</p><p>${new Date()}</p>`)
+})
+
+app.post("/persons",(request,response)=>{
+  const body = request.body;
+  console.log(body);
+  if(!body.name || !body.number)
+    {
+      return response.status(400).json({
+        "error":"One or more property missing"
+      })
+    }
+    let id = Math.ceil(Math.random()*10000000000000);
+    const name = body.name;
+    if(persons.find(person=>person.name.toLowerCase()===name.toLowerCase()))
+      {
+        return response.status(400).json({"error":"name must be unique"});
+      }
+    const person = {id:id,name:body.name,number:body.number};
+    console.log(person);
+    persons =persons.concat(person);
+    response.status(201).json(person);
+    console.log(persons);
 })
 app.listen(3001,()=>{
     console.log("server running....")
