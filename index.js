@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 app.use(cors());
+app.use(express.static('dist'));
 const morgan = require('morgan');
 morgan.token('body', function (req, res) { return JSON.stringify(req.body?req.body:"") })
 app.use(express.json());
@@ -73,6 +74,7 @@ app.post("/persons",(request,response)=>{
     response.status(201).json(person);
     console.log(persons);
 })
+
 app.listen(3001,()=>{
     console.log("server running....")
 })
