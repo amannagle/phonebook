@@ -1,4 +1,6 @@
 const express = require("express");
+require('dotenv').config()
+const Person = require('./models/phonebook')
 const app = express();
 const cors = require('cors');
 app.use(cors());
@@ -31,7 +33,9 @@ let persons = [
 ];
 
 app.get("/persons",(request,response)=>{
-    response.json(persons);
+  Person.find({}).then(result => {
+    response.json(result);
+  })
 });
 app.delete("/persons/:id",(request,response)=>{
   const id = Number(request.params.id);
@@ -62,17 +66,17 @@ app.post("/persons",(request,response)=>{
         "error":"One or more property missing"
       })
     }
-    let id = Math.ceil(Math.random()*10000000000000);
+    /* let id = Math.ceil(Math.random()*10000000000000);
     const name = body.name;
     if(persons.find(person=>person.name.toLowerCase()===name.toLowerCase()))
       {
         return response.status(400).json({"error":"name must be unique"});
-      }
-    const person = {id:id,name:body.name,number:body.number};
-    console.log(person);
-    persons =persons.concat(person);
-    response.status(201).json(person);
-    console.log(persons);
+      } */
+    const person =new Person({name:body.name,number:body.number});
+    
+   person.save().then(savedPerson=>{
+    response.json(savedPerson);
+   })
 })
 const PORT = process.env.PORT || 3001;
 app.listen(PORT,()=>{
