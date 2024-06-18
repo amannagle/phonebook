@@ -38,9 +38,15 @@ app.get("/persons",(request,response)=>{
   })
 });
 app.delete("/persons/:id",(request,response)=>{
-  const id = Number(request.params.id);
-  persons = persons.filter(person=>person.id !==id);
-  response.status(204).end();
+  const id= request.params.id;
+  console.log("id is",id);
+  Person.findByIdAndDelete(id).then(result=>{
+    response.status(204).end();
+  })
+  .catch(error=>{
+    console.log(error)
+    response.status(400).end();
+  })
 })
 app.get("/persons/:id",(request,response)=>{
   const id = Number(request.params.id);
