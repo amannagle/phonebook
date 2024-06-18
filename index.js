@@ -8,7 +8,17 @@ app.use(express.static('dist'));
 const morgan = require('morgan');
 morgan.token('body', function (req, res) { return JSON.stringify(req.body?req.body:"") })
 app.use(express.json());
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
+
+const errorHandler = (error,request,response,next) =>{
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next()
+}
 let persons = [
   {
     id: 1,
@@ -32,12 +42,12 @@ let persons = [
   },
 ];
 
-app.get("/persons",(request,response)=>{
+app.get("/persons",(request,response,next)=>{
   Person.find({}).then(result => {
     response.json(result);
   })
 });
-app.delete("/persons/:id",(request,response)=>{
+app.delete("/persons/:id",(request,response,next)=>{
   const id= request.params.id;
   console.log("id is",id);
   Person.findByIdAndDelete(id).then(result=>{
@@ -45,10 +55,10 @@ app.delete("/persons/:id",(request,response)=>{
   })
   .catch(error=>{
     console.log(error)
-    response.status(400).end();
+    next(error);
   })
 })
-app.get("/persons/:id",(request,response)=>{
+app.get("/persons/:id",(request,response,next)=>{
   const id = Number(request.params.id);
   const person = persons.find(person=>person.id ===id);
   console.log(person);
@@ -59,11 +69,11 @@ app.get("/persons/:id",(request,response)=>{
     else
     response.status(400).send(`person not found`);
 })
-app.get("/info",(request,response)=>{
+app.get("/info",(request,response,next)=>{
   response.send(`<p>phonebook has ${persons.length} people</p><p>${new Date()}</p>`)
 })
 
-app.post("/persons",(request,response)=>{
+app.post("/persons",(request,response,next)=>{
   const body = request.body;
   console.log(body);
   if(!body.name || !body.number)
@@ -84,6 +94,8 @@ app.post("/persons",(request,response)=>{
     response.json(savedPerson);
    })
 })
+
+app.use(errorHandler);
 const PORT = process.env.PORT || 3001;
 app.listen(PORT,()=>{
     console.log("server running....")
